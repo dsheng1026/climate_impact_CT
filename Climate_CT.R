@@ -1,3 +1,6 @@
+# install.packages("remotes")
+# remotes::install_github("JGCRI/gcamdata")
+
 conv_MIL_BIL = 1000.0
 # conv_75_90 = 2.129
 conv_75_90 = 2.129173
@@ -155,78 +158,79 @@ PluckBind("TotalClimateForcing") %>%
 PluckBind("CO2Emission") -> 
   df.CO2
 
-df.GMT %>% 
-  filter(grepl("95", scenario)) %>% 
-  mutate(scenario = gsub("food_95_open", "Reference", scenario)) %>% 
-  group_by(year) %>% 
-  # filter(scenario != "HELPS_ref_open") %>% 
-  mutate(index = 100*(value / value[scenario == "Reference"] -1),
-         delta = value - value[scenario == "Reference"]) %>% 
-  select(scenario, year, value = delta) %>% 
-  mutate(variable = "GMT (degrees C)") %>% 
-  bind_rows(df.CO2 %>% 
-              group_by(scenario, Units, year) %>% 
-              summarise(value = sum(value, na.rm = T)) %>% 
-              filter(grepl("95", scenario)) %>% 
-              mutate(scenario = gsub("food_95_open", "Reference", scenario)) %>% 
-              group_by(year) %>% 
-              filter(year >= 2015) %>% 
-              mutate(index = 100*(value / value[scenario == "Reference"] -1),
-                     delta = value - value[scenario == "Reference"]) %>% 
-              select(scenario, year, value = index) %>% 
-              mutate(variable = "CO2 Emission (%)")) %>% 
-  bind_rows(df.forcing %>% 
-              filter(grepl("95", scenario)) %>% 
-              mutate(scenario = gsub("food_95_open", "Reference", scenario)) %>%  
-              group_by(year) %>% 
-              mutate(index = 100*(value / value[scenario == "Reference"] -1),
-                     delta = value - value[scenario == "Reference"]) %>% 
-              select(scenario, year, value = delta) %>% 
-              mutate(variable = "Climate Forcing (W/m^2)")) %>% 
-  bind_rows(df.GMT %>% 
-              filter(grepl("ref", scenario)) %>% 
-              mutate(scenario = gsub("food_ref_open", "Reference", scenario)) %>% 
-              group_by(year) %>% 
-              # filter(scenario != "HELPS_ref_open") %>% 
-              mutate(index = 100*(value / value[scenario == "Reference"] -1),
-                     delta = value - value[scenario == "Reference"]) %>% 
-              select(scenario, year, value = delta) %>% 
-              mutate(variable = "GMT (degrees C)") %>% 
-              bind_rows(df.CO2 %>% 
-                          group_by(scenario, Units, year) %>% 
-                          summarise(value = sum(value, na.rm = T)) %>% 
-                          filter(grepl("ref", scenario)) %>% 
-                          mutate(scenario = gsub("food_ref_open", "Reference", scenario)) %>% 
-                          group_by(year) %>% 
-                          filter(year >= 2015) %>% 
-                          mutate(index = 100*(value / value[scenario == "Reference"] -1),
-                                 delta = value - value[scenario == "Reference"]) %>% 
-                          select(scenario, year, value = index) %>% 
-                          mutate(variable = "CO2 Emission (%)")) %>% 
-              bind_rows(df.forcing %>% 
-                          filter(grepl("ref", scenario)) %>% 
-                          mutate(scenario = gsub("food_ref_open", "Reference", scenario)) %>%  
-                          group_by(year) %>% 
-                          mutate(index = 100*(value / value[scenario == "Reference"] -1),
-                                 delta = value - value[scenario == "Reference"]) %>% 
-                          select(scenario, year, value = delta) %>% 
-                          mutate(variable = "Climate Forcing (W/m^2)"))) %>% 
-  filter(year >= 2015,
-         !scenario %in% c("Reference", "Ref")) %>% 
-  SCE_NAME() ->
-  df.plot.95
-
-df.plot.95 %>% 
-  ggplot(aes(x = year, y = value, color = impact)) +
-  geom_hline(yintercept = 0, linetype = "dashed", linewidth = 0.8) +
-  geom_line(linewidth = 1) +
-  facet_grid(variable ~ scenario, scales = "free_y") +
-  scale_color_brewer(palette = "Set2") +
-  labs(x = "", y = "Response", title = "Response to climate impacts across scenarios") +
-  theme_bw()  ->
-  ClimateSummary; ClimateSummary
-
-Write_png(ClimateSummary, "ClimateSummary", DIR_MODULE, w = 8, h = 6, r = 300)
+# df.GMT %>% 
+#   SCE_NAME() %>% 
+#   filter(grepl("95", scenario)) %>% 
+#   mutate(scenario = gsub("food_95_open", "Reference", scenario)) %>% 
+#   group_by(year) %>% 
+#   # filter(scenario != "HELPS_ref_open") %>% 
+#   mutate(index = 100*(value / value[scenario == "Reference"] -1),
+#          delta = value - value[scenario == "Reference"]) %>% 
+#   select(scenario, year, value = delta) %>% 
+#   mutate(variable = "GMT (degrees C)") %>% 
+#   bind_rows(df.CO2 %>% 
+#               group_by(scenario, Units, year) %>% 
+#               summarise(value = sum(value, na.rm = T)) %>% 
+#               filter(grepl("95", scenario)) %>% 
+#               mutate(scenario = gsub("food_95_open", "Reference", scenario)) %>% 
+#               group_by(year) %>% 
+#               filter(year >= 2015) %>% 
+#               mutate(index = 100*(value / value[scenario == "Reference"] -1),
+#                      delta = value - value[scenario == "Reference"]) %>% 
+#               select(scenario, year, value = index) %>% 
+#               mutate(variable = "CO2 Emission (%)")) %>% 
+#   bind_rows(df.forcing %>% 
+#               filter(grepl("95", scenario)) %>% 
+#               mutate(scenario = gsub("food_95_open", "Reference", scenario)) %>%  
+#               group_by(year) %>% 
+#               mutate(index = 100*(value / value[scenario == "Reference"] -1),
+#                      delta = value - value[scenario == "Reference"]) %>% 
+#               select(scenario, year, value = delta) %>% 
+#               mutate(variable = "Climate Forcing (W/m^2)")) %>% 
+#   bind_rows(df.GMT %>% 
+#               filter(grepl("ref", scenario)) %>% 
+#               mutate(scenario = gsub("food_ref_open", "Reference", scenario)) %>% 
+#               group_by(year) %>% 
+#               # filter(scenario != "HELPS_ref_open") %>% 
+#               mutate(index = 100*(value / value[scenario == "Reference"] -1),
+#                      delta = value - value[scenario == "Reference"]) %>% 
+#               select(scenario, year, value = delta) %>% 
+#               mutate(variable = "GMT (degrees C)") %>% 
+#               bind_rows(df.CO2 %>% 
+#                           group_by(scenario, Units, year) %>% 
+#                           summarise(value = sum(value, na.rm = T)) %>% 
+#                           filter(grepl("ref", scenario)) %>% 
+#                           mutate(scenario = gsub("food_ref_open", "Reference", scenario)) %>% 
+#                           group_by(year) %>% 
+#                           filter(year >= 2015) %>% 
+#                           mutate(index = 100*(value / value[scenario == "Reference"] -1),
+#                                  delta = value - value[scenario == "Reference"]) %>% 
+#                           select(scenario, year, value = index) %>% 
+#                           mutate(variable = "CO2 Emission (%)")) %>% 
+#               bind_rows(df.forcing %>% 
+#                           filter(grepl("ref", scenario)) %>% 
+#                           mutate(scenario = gsub("food_ref_open", "Reference", scenario)) %>%  
+#                           group_by(year) %>% 
+#                           mutate(index = 100*(value / value[scenario == "Reference"] -1),
+#                                  delta = value - value[scenario == "Reference"]) %>% 
+#                           select(scenario, year, value = delta) %>% 
+#                           mutate(variable = "Climate Forcing (W/m^2)"))) %>% 
+#   filter(year >= 2015,
+#          !scenario %in% c("Reference", "Ref")) %>% 
+#   SCE_NAME() ->
+#   df.plot.95
+# 
+# df.plot.95 %>% 
+#   ggplot(aes(x = year, y = value, color = impact)) +
+#   geom_hline(yintercept = 0, linetype = "dashed", linewidth = 0.8) +
+#   geom_line(linewidth = 1) +
+#   facet_grid(variable ~ scenario, scales = "free_y") +
+#   scale_color_brewer(palette = "Set2") +
+#   labs(x = "", y = "Response", title = "Response to climate impacts across scenarios") +
+#   theme_bw()  ->
+#   ClimateSummary; ClimateSummary
+# 
+# Write_png(ClimateSummary, "ClimateSummary", DIR_MODULE, w = 8, h = 6, r = 300)
 
 
 
@@ -614,6 +618,105 @@ delta.Ag.Price %>%
   Ag.Price
 
 Write_png(Ag.Price, "Ag.Price", DIR_MODULE, w = 8, h = 6, r = 300)
+
+### one-at-a-time ----
+sec_list <- c("Corn", "Rice", "Vegetables", "Wheat", "Soybean")
+
+for (f in sec_list){ 
+
+REG %>% left_join(Ag.Price.32 %>% SCE_NAME() %>% filter(impact == "crop", sector == f), by = "reg_nm") %>% 
+  bind_rows(REG %>% left_join(Ag.Price.32 %>% SCE_NAME() %>% filter(impact == "hdcd", sector == f), by = "reg_nm")) %>% 
+  bind_rows(REG %>% left_join(Ag.Price.32 %>% SCE_NAME() %>% filter(impact == "hydro", sector == f), by = "reg_nm")) %>% 
+  bind_rows(REG %>% left_join(Ag.Price.32 %>% SCE_NAME() %>% filter(impact == "labor", sector == f), by = "reg_nm")) %>% 
+  bind_rows(REG %>% left_join(Ag.Price.32 %>% SCE_NAME() %>% filter(impact == "runoff", sector == f), by = "reg_nm")) %>% 
+  bind_rows(REG %>% left_join(Ag.Price.32 %>% SCE_NAME() %>% filter(impact == "all", sector == f), by = "reg_nm")) %>% 
+  ggplot() +
+  geom_sf(aes(fill = index)) +
+  scale_fill_gradient2(low = "red", high = "blue", midpoint = 0, name = "%") +
+  labs(title = paste0(f, " price relative to BwO: 2100")) +
+  coord_sf(datum = NA) +
+  facet_grid(impact~scenario) +
+  theme_bw() + theme0 + theme1 ->
+  price_individual
+
+Write_png(price_individual, paste0(f, "_price_individual"), DIR_MODULE, w = 10, h = 6, r = 300)
+
+}
+
+
+
+PluckBind("Meatprices") %>% 
+  group_by(region, sector, year) %>% 
+  mutate(scenario = gsub("food_ref_open", "Reference", scenario)) %>% 
+  mutate(index = 100 * value / value[scenario == "Reference"] - 100) %>% 
+  filter(year == 2100) %>% rename(reg_nm = region) ->
+  Mt.Price.32
+
+REG %>% left_join(Mt.Price.32 %>% filter(sector == "Beef"), by = "reg_nm") %>% 
+  bind_rows(REG %>% left_join(Mt.Price.32 %>% filter(sector == "Dairy"), by = "reg_nm")) %>% 
+  bind_rows(REG %>% left_join(Mt.Price.32 %>% filter(sector == "Pork"), by = "reg_nm")) %>% 
+  bind_rows(REG %>% left_join(Mt.Price.32 %>% filter(sector == "Poultry"), by = "reg_nm")) %>% 
+  bind_rows(REG %>% left_join(Mt.Price.32 %>% filter(sector == "SheepGoat"), by = "reg_nm")) %>% 
+  filter(!scenario %in% c("Ref", "Reference")) %>% 
+  SCE_NAME() %>% na.omit() ->
+  delta.Mt.Price
+
+delta.Ag.Price %>% 
+  filter(impact == "all") %>% 
+  ggplot() +
+  geom_sf(aes(fill = index)) +
+  scale_fill_gradient2(low = "red", high = "blue", midpoint = 0, name = "%") +
+  labs(title = "Major livestock price\nrelative to BwO: 2100") +
+  coord_sf(datum = NA) +
+  facet_grid(sector ~ scenario) +
+  theme_bw() + theme0 + theme1 ->
+  Mt.Price
+
+Write_png(Mt.Price, "Mt.Price", DIR_MODULE, w = 8, h = 6, r = 300)
+
+### one-at-a-time ----
+sec_list <- c("Beef", "Dairy", "Pork", "Poultry", "SheepGoat")
+
+for (f in sec_list){ 
+  
+  REG %>% left_join(Mt.Price.32 %>% SCE_NAME() %>% filter(impact == "crop", sector == f), by = "reg_nm") %>% 
+    bind_rows(REG %>% left_join(Mt.Price.32 %>% SCE_NAME() %>% filter(impact == "hdcd", sector == f), by = "reg_nm")) %>% 
+    bind_rows(REG %>% left_join(Mt.Price.32 %>% SCE_NAME() %>% filter(impact == "hydro", sector == f), by = "reg_nm")) %>% 
+    bind_rows(REG %>% left_join(Mt.Price.32 %>% SCE_NAME() %>% filter(impact == "labor", sector == f), by = "reg_nm")) %>% 
+    bind_rows(REG %>% left_join(Mt.Price.32 %>% SCE_NAME() %>% filter(impact == "runoff", sector == f), by = "reg_nm")) %>% 
+    bind_rows(REG %>% left_join(Mt.Price.32 %>% SCE_NAME() %>% filter(impact == "all", sector == f), by = "reg_nm")) %>% 
+    ggplot() +
+    geom_sf(aes(fill = index)) +
+    scale_fill_gradient2(low = "red", high = "blue", midpoint = 0, name = "%") +
+    labs(title = paste0(f, " price relative to BwO: 2100")) +
+    coord_sf(datum = NA) +
+    facet_grid(impact~scenario) +
+    theme_bw() + theme0 + theme1 ->
+    price_individual
+  
+  Write_png(price_individual, paste0(f, "_price_individual"), DIR_MODULE, w = 10, h = 6, r = 300)
+  
+}
+
+
+
+REG %>% left_join(Ag.Price.32 %>% SCE_NAME() %>% filter(impact == "crop", sector == "Corn"), by = "reg_nm") %>% 
+  bind_rows(REG %>% left_join(Ag.Price.32 %>% SCE_NAME() %>% filter(impact == "hdcd", sector == "Corn"), by = "reg_nm")) %>% 
+  bind_rows(REG %>% left_join(Ag.Price.32 %>% SCE_NAME() %>% filter(impact == "hydro", sector == "Corn"), by = "reg_nm")) %>% 
+  bind_rows(REG %>% left_join(Ag.Price.32 %>% SCE_NAME() %>% filter(impact == "labor", sector == "Corn"), by = "reg_nm")) %>% 
+  bind_rows(REG %>% left_join(Ag.Price.32 %>% SCE_NAME() %>% filter(impact == "runoff", sector == "Corn"), by = "reg_nm")) %>% 
+  bind_rows(REG %>% left_join(Ag.Price.32 %>% SCE_NAME() %>% filter(impact == "all", sector == "Corn"), by = "reg_nm")) %>% 
+  ggplot() +
+  geom_sf(aes(fill = index)) +
+  scale_fill_gradient2(low = "red", high = "blue", midpoint = 0, name = "%") +
+  labs(title = "Corn price relative to BwO: 2100") +
+  coord_sf(datum = NA) +
+  facet_grid(impact~scenario) +
+  theme_bw() + theme0 + theme1 ->
+  price_individual
+
+Write_png(price_individual, "Corn_price_individual", DIR_MODULE, w = 10, h = 6, r = 300)
+
 
 
 PluckBind("ElecPriceBySector") %>% 
